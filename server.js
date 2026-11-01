@@ -518,6 +518,14 @@ async function fetchCinemaCatalog(page = 1, categoryId = 0) {
     const yearMatch = title.match(/\b(202\d|199\d|200\d|201\d)\b/);
     const year = yearMatch ? yearMatch[1] : '2026';
 
+    // Extract iframe & vdoId directly from post ACF fields
+    const iframeSrc = p.acf?.file || p.acf?.file_2 || '';
+    let vdoId = null;
+    if (iframeSrc) {
+      const parts = iframeSrc.split('/').filter(Boolean);
+      vdoId = parts[parts.length - 1];
+    }
+
     return {
       id: p.id,
       slug: p.slug,
@@ -529,6 +537,8 @@ async function fetchCinemaCatalog(page = 1, categoryId = 0) {
       date: p.date,
       link: p.link,
       categories: p.categories || [],
+      vdoId,
+      streamUrl: vdoId ? `/api/proxy/hls/vdohls.com/${vdoId}/playlist.m3u8` : null,
       isCinema: true
     };
   });
@@ -552,6 +562,14 @@ async function searchCinema(query) {
     const synopsis = cleanHtmlEntities(p.excerpt?.rendered || '');
     const yearMatch = title.match(/\b(202\d|199\d|200\d|201\d)\b/);
 
+    // Extract iframe & vdoId directly from post ACF fields
+    const iframeSrc = p.acf?.file || p.acf?.file_2 || '';
+    let vdoId = null;
+    if (iframeSrc) {
+      const parts = iframeSrc.split('/').filter(Boolean);
+      vdoId = parts[parts.length - 1];
+    }
+
     return {
       id: p.id,
       slug: p.slug,
@@ -563,26 +581,92 @@ async function searchCinema(query) {
       date: p.date,
       link: p.link,
       categories: p.categories || [],
+      vdoId,
+      streamUrl: vdoId ? `/api/proxy/hls/vdohls.com/${vdoId}/playlist.m3u8` : null,
       isCinema: true
     };
   });
 }
 
 async function fetchCinemaDetails({ id, slug, link }) {
+  // Step 1: If we have an id or can resolve by slug, prioritize WP REST API for 100% reliability
+  if (id || slug) {
+    try {
+      const wpUrl = id 
+        ? `${CINEMA_ORIGIN}/wp-json/wp/v2/posts/${id}?_embed=1`
+        : `${CINEMA_ORIGIN}/wp-json/wp/v2/posts?slug=${encodeURIComponent(slug)}&_embed=1`;
+      
+      const pRes = await fetch(wpUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (pRes.ok) {
+        let pData = await pRes.json();
+        const p = Array.isArray(pData) ? pData[0] : pData;
+        if (p && p.id) {
+          const pTitle = cleanHtmlEntities(p.title?.rendered || '').replace(/^ดูหนัง\s*/i, '').replace(/^ดูซีรี่ย์\s*/i, '');
+          const pPoster = p._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
+          const pDesc = cleanHtmlEntities(p.excerpt?.rendered || '');
+          const yMatch = pTitle.match(/\b(202\d|199\d|200\d|201\d)\b/);
+
+          const cMatch = (p.content?.rendered || '').match(/<iframe[^>]+src=["']([^"']*(?:player77hdfree|embed|vdohls)[^"']*)["']/i);
+          let resolvedIframe = p.acf?.file || p.acf?.file_2 || (cMatch ? cMatch[1] : null);
+          let resolvedVdoId = null;
+          if (resolvedIframe) {
+            const parts = resolvedIframe.split('/').filter(Boolean);
+            resolvedVdoId = parts[parts.length - 1];
+          }
+
+          let tracks = [];
+          if (resolvedVdoId) {
+            try {
+              const masterRes = await fetch(`https://vdohls.com/${resolvedVdoId}/playlist.m3u8`, {
+                headers: { 'Referer': 'https://player77hdfree.xyz/' }
+              });
+              if (masterRes.ok) {
+                const text = await masterRes.text();
+                const trackRegex = /#EXT-X-MEDIA:TYPE=AUDIO.*?NAME=["']([^"']+)["'].*?LANGUAGE=["']([^"']+)["']/g;
+                let m;
+                while ((m = trackRegex.exec(text)) !== null) {
+                  tracks.push({ name: m[1], lang: m[2] });
+                }
+              }
+            } catch (e) {
+              console.warn('Could not inspect master playlist tracks:', e.message);
+            }
+          }
+
+          if (resolvedVdoId) {
+            return {
+              id: p.id,
+              slug: p.slug,
+              title: pTitle,
+              poster: pPoster || '/assets/placeholder.jpg',
+              synopsis: pDesc,
+              year: yMatch ? yMatch[1] : '2026',
+              rating: '8.8',
+              vdoId: resolvedVdoId,
+              iframeSrc: resolvedIframe,
+              streamUrl: `/api/proxy/hls/vdohls.com/${resolvedVdoId}/playlist.m3u8`,
+              tracks,
+              link: p.link || link,
+              isCinema: true
+            };
+          }
+        }
+      }
+    } catch (wpErr) {
+      console.warn('Cinema WP REST fast path failed:', wpErr.message);
+    }
+  }
+
+  // Step 2: HTML Scraping Fallback
   let targetUrl = link;
   if (!targetUrl && slug) {
     targetUrl = `${CINEMA_ORIGIN}/${slug}/`;
-  }
-  if (!targetUrl && id) {
-    try {
-      const postRes = await fetch(`${CINEMA_ORIGIN}/wp-json/wp/v2/posts/${id}`, { headers: CINEMA_HEADERS });
-      if (postRes.ok) {
-        const p = await postRes.json();
-        targetUrl = p.link;
-      }
-    } catch (e) {
-      console.warn('Could not resolve link for id:', id);
-    }
   }
 
   if (!targetUrl) {
@@ -640,11 +724,30 @@ async function fetchCinemaDetails({ id, slug, link }) {
         const yMatch = pTitle.match(/\b(202\d|199\d|200\d|201\d)\b/);
 
         const cMatch = (p.content?.rendered || '').match(/<iframe[^>]+src=["']([^"']*(?:player77hdfree|embed|vdohls)[^"']*)["']/i);
-        const resolvedIframe = cMatch ? cMatch[1] : null;
+        let resolvedIframe = p.acf?.file || p.acf?.file_2 || (cMatch ? cMatch[1] : null);
         let resolvedVdoId = null;
         if (resolvedIframe) {
           const parts = resolvedIframe.split('/').filter(Boolean);
           resolvedVdoId = parts[parts.length - 1];
+        }
+
+        let tracks = [];
+        if (resolvedVdoId) {
+          try {
+            const masterRes = await fetch(`https://vdohls.com/${resolvedVdoId}/playlist.m3u8`, {
+              headers: { 'Referer': 'https://player77hdfree.xyz/' }
+            });
+            if (masterRes.ok) {
+              const text = await masterRes.text();
+              const trackRegex = /#EXT-X-MEDIA:TYPE=AUDIO.*?NAME=["']([^"']+)["'].*?LANGUAGE=["']([^"']+)["']/g;
+              let m;
+              while ((m = trackRegex.exec(text)) !== null) {
+                tracks.push({ name: m[1], lang: m[2] });
+              }
+            }
+          } catch (e) {
+            console.warn('Could not inspect master playlist tracks in WP fallback:', e.message);
+          }
         }
 
         return {
@@ -658,7 +761,7 @@ async function fetchCinemaDetails({ id, slug, link }) {
           vdoId: resolvedVdoId,
           iframeSrc: resolvedIframe,
           streamUrl: resolvedVdoId ? `/api/proxy/hls/vdohls.com/${resolvedVdoId}/playlist.m3u8` : null,
-          tracks: [],
+          tracks,
           link: p.link,
           isCinema: true
         };

@@ -1296,7 +1296,7 @@ async function playCinemaDirect(id, slug, encodedLink) {
     const linkParam = encodedLink ? `&link=${encodedLink}` : '';
     const res = await fetch(`/api/cinema/detail?id=${id || ''}&slug=${slug || ''}${linkParam}`);
     const json = await res.json();
-    if (json.success && json.data) {
+    if (json.success && json.data && json.data.streamUrl) {
       playMovie(json.data);
     } else {
       showToast('ไม่พบสัญญาณสตรีมของภาพยนตร์เรื่องนี้', 'error');
