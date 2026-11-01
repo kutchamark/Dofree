@@ -388,3 +388,62 @@ body {
     padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 8px);
   }
 }
+
+/* ========================================== */
+/* IMMERSIVE EDGE-TO-EDGE VIDEO PLAYER       */
+/* ========================================== */
+#playerModal {
+  background: #000000 !important;
+  user-select: none;
+}
+
+#playerCanvasContainer {
+  width: 100%;
+  height: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#playerVideoWrapper {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: #000000 !important;
+}
+
+#mainVideoPlayer {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Controls fade in/out state */
+#playerTopBar,
+#playerControlsOverlay {
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+}
+
+#playerModal.controls-hidden #playerTopBar,
+#playerModal.controls-hidden #playerControlsOverlay {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#playerModal.controls-hidden {
+  cursor: none;
+}
+
+/* Fullscreen native overrides */
+#playerModal:fullscreen #playerVideoWrapper,
+#playerModal:-webkit-full-screen #playerVideoWrapper {
+  width: 100vw !important;
+  height: 100vh !important;
+}

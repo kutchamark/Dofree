@@ -1403,6 +1403,7 @@ function playMovie(movie) {
 
   el.playerModal.classList.remove('hidden');
   el.playerModal.classList.add('flex');
+  showPlayerControls();
   el.playerBuffering.classList.remove('hidden');
 
   loadVideoStream(movie.proxyStreamUrl || movie.streamUrl);
@@ -1512,7 +1513,31 @@ function resumeWatchProgress() {
   }
 }
 
+let playerControlsTimer = null;
+
+function showPlayerControls() {
+  el.playerModal.classList.remove('controls-hidden');
+  clearTimeout(playerControlsTimer);
+  if (!el.video.paused) {
+    playerControlsTimer = setTimeout(() => {
+      el.playerModal.classList.add('controls-hidden');
+    }, 3200);
+  }
+}
+
+function hidePlayerControls() {
+  if (!el.video.paused) {
+    el.playerModal.classList.add('controls-hidden');
+  }
+}
+
 function closePlayer() {
+  clearTimeout(playerControlsTimer);
+  el.playerModal.classList.remove('controls-hidden');
+  if (isFullscreenActive()) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exit) exit.call(document).catch(() => {});
+  }
   el.playerModal.classList.add('hidden');
   el.playerModal.classList.remove('flex');
   el.video.pause();
@@ -1526,6 +1551,34 @@ function closePlayer() {
 
 function setupVideoEvents() {
   const video = el.video;
+
+  // Active user interaction resets controls auto-hide timer
+  ['mousemove', 'pointermove', 'touchstart', 'touchmove', 'keydown'].forEach(evt => {
+    el.playerModal.addEventListener(evt, () => showPlayerControls(), { passive: true });
+  });
+
+  // Tap anywhere on canvas container toggles controls / play
+  const canvas = document.getElementById('playerCanvasContainer');
+  if (canvas) {
+    canvas.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('#progressBarContainer') || e.target.closest('select') || e.target.closest('input')) {
+        showPlayerControls();
+        return;
+      }
+      if (el.playerModal.classList.contains('controls-hidden')) {
+        showPlayerControls();
+        e.stopPropagation();
+      } else {
+        togglePlayPause();
+        showPlayerControls();
+      }
+    });
+  }
+
+  // Fullscreen state listeners
+  document.addEventListener('fullscreenchange', updateFullscreenIcons);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenIcons);
+
   video.addEventListener('timeupdate', () => {
     if (!video.duration) return;
     const current = video.currentTime;
@@ -1553,31 +1606,45 @@ function setupVideoEvents() {
     el.bottomPlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     el.middlePlayIcon.innerHTML = '<i class="fa-solid fa-pause text-2xl"></i>';
     el.playerBuffering.classList.add('hidden');
+    showPlayerControls();
   });
 
   video.addEventListener('pause', () => {
     el.bottomPlayBtn.innerHTML = '<i class="fa-solid fa-play ml-0.5"></i>';
     el.middlePlayIcon.innerHTML = '<i class="fa-solid fa-play text-2xl ml-1"></i>';
+    clearTimeout(playerControlsTimer);
+    el.playerModal.classList.remove('controls-hidden');
+  });
+
+  video.addEventListener('ended', () => {
+    clearTimeout(playerControlsTimer);
+    el.playerModal.classList.remove('controls-hidden');
   });
 
   video.addEventListener('waiting', () => el.playerBuffering.classList.remove('hidden'));
-  video.addEventListener('playing', () => el.playerBuffering.classList.add('hidden'));
+  video.addEventListener('playing', () => {
+    el.playerBuffering.classList.add('hidden');
+    showPlayerControls();
+  });
 }
 
 function togglePlayPause() {
   if (el.video.paused) el.video.play();
   else el.video.pause();
+  showPlayerControls();
 }
 
 function skipSeconds(sec) {
   if (!el.video.duration) return;
   el.video.currentTime = Math.max(0, Math.min(el.video.duration, el.video.currentTime + sec));
+  showPlayerControls();
 }
 
 function seekVideo(e) {
   const rect = document.getElementById('progressBarContainer').getBoundingClientRect();
   const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
   if (el.video.duration) el.video.currentTime = ratio * el.video.duration;
+  showPlayerControls();
 }
 
 function changeVolume(val) {
@@ -1585,21 +1652,97 @@ function changeVolume(val) {
   if (val == 0) el.volumeBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
   else if (val < 0.5) el.volumeBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
   else el.volumeBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+  showPlayerControls();
 }
 
 function toggleMute() {
   el.video.muted = !el.video.muted;
   if (el.video.muted) el.volumeBtn.innerHTML = '<i class="fa-solid fa-volume-xmark text-[#ff1e38]"></i>';
   else changeVolume(el.video.volume);
+  showPlayerControls();
 }
 
 function changePlaybackSpeed(speed) {
   el.video.playbackRate = parseFloat(speed);
+  showPlayerControls();
+}
+
+function toggleVideoFit() {
+  const v = el.video;
+  const isContain = v.classList.contains('object-contain');
+  const fitText = document.getElementById('videoFitText');
+  if (isContain) {
+    v.classList.remove('object-contain');
+    v.classList.add('object-cover');
+    if (fitText) fitText.textContent = 'เต็มกรอบ';
+    showToast('ขยายวิดีโอเต็มหน้าจอ (Fill / Crop)', 'info');
+  } else {
+    v.classList.remove('object-cover');
+    v.classList.add('object-contain');
+    if (fitText) fitText.textContent = 'พอดี';
+    showToast('สัดส่วนต้นฉบับ (Fit Contain)', 'info');
+  }
+  showPlayerControls();
+}
+
+function isFullscreenActive() {
+  return !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+function updateFullscreenIcons() {
+  const isFs = isFullscreenActive();
+  document.querySelectorAll('#fullscreenBtn i, .fullscreen-toggle i').forEach(icon => {
+    if (isFs) {
+      icon.className = 'fa-solid fa-compress text-xs sm:text-sm';
+    } else {
+      icon.className = 'fa-solid fa-expand text-xs sm:text-sm';
+    }
+  });
 }
 
 function toggleTheaterFullscreen() {
-  if (!document.fullscreenElement) el.playerModal.requestFullscreen().catch(() => {});
-  else document.exitFullscreen().catch(() => {});
+  const isIPhone = /iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIPhone && el.video.webkitEnterFullscreen) {
+    try {
+      el.video.webkitEnterFullscreen();
+      return;
+    } catch (e) {
+      console.warn('webkitEnterFullscreen error:', e);
+    }
+  }
+
+  if (!isFullscreenActive()) {
+    const req = el.playerModal.requestFullscreen ||
+                el.playerModal.webkitRequestFullscreen ||
+                el.playerModal.mozRequestFullScreen ||
+                el.playerModal.msRequestFullscreen;
+    if (req) {
+      req.call(el.playerModal).then(() => {
+        showPlayerControls();
+        updateFullscreenIcons();
+      }).catch(() => {
+        if (el.video.webkitEnterFullscreen) el.video.webkitEnterFullscreen();
+      });
+    } else if (el.video.webkitEnterFullscreen) {
+      el.video.webkitEnterFullscreen();
+    }
+  } else {
+    const exit = document.exitFullscreen ||
+                 document.webkitExitFullscreen ||
+                 document.mozCancelFullScreen ||
+                 document.msExitFullscreen;
+    if (exit) {
+      exit.call(document).then(() => {
+        showPlayerControls();
+        updateFullscreenIcons();
+      }).catch(() => {});
+    }
+  }
 }
 
 // -------------------------------------------------------------
@@ -1685,6 +1828,16 @@ function setupKeyboardShortcuts() {
         skipSeconds(10);
       } else if (isReaderOpen) {
         navigateChapter('next');
+      }
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (isPlayerOpen) {
+        e.preventDefault();
+        toggleTheaterFullscreen();
+      }
+    } else if (e.key === 'm' || e.key === 'M') {
+      if (isPlayerOpen) {
+        e.preventDefault();
+        toggleMute();
       }
     } else if (e.key === 'Escape') {
       if (isPlayerOpen) closePlayer();

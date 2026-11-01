@@ -667,20 +667,20 @@
   <!-- ========================================== -->
   <!-- MODAL 4: DOFREE ULTRA CINEMA VIDEO PLAYER  -->
   <!-- ========================================== -->
-  <div id="playerModal" class="fixed inset-0 z-50 bg-black hidden flex-col items-center justify-center">
+  <div id="playerModal" class="fixed inset-0 z-50 bg-black hidden flex-col items-center justify-center overflow-hidden">
     
-    <!-- Video Player Top Bar -->
-    <div class="absolute top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-4 sm:p-6 flex items-center justify-between">
-      <div class="flex items-center gap-3 sm:gap-4">
-        <button onclick="closePlayer()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="ออก (Esc)">
+    <!-- Video Player Top Bar (Auto-hides with controls) -->
+    <div id="playerTopBar" class="absolute top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-3 sm:p-5 pt-[max(0.75rem,env(safe-area-inset-top))] flex items-center justify-between">
+      <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+        <button onclick="closePlayer()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer flex-shrink-0" title="ออก (Esc)">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </button>
 
-        <div>
-          <h3 id="playerMovieTitle" class="text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md lg:max-w-xl">
+        <div class="min-w-0">
+          <h3 id="playerMovieTitle" class="text-xs sm:text-base font-bold text-white truncate max-w-[180px] sm:max-w-md lg:max-w-xl">
             กำลังเล่น...
           </h3>
-          <div class="flex items-center gap-2 text-[11px] text-zinc-400">
+          <div class="flex items-center gap-2 text-[10px] sm:text-[11px] text-zinc-400">
             <span id="playerMovieGenre">DoFree Cinema</span>
             <span>•</span>
             <span class="text-emerald-400 font-semibold" id="playerServerIndicator">Ultra HLS Relay</span>
@@ -688,32 +688,32 @@
         </div>
       </div>
 
-      <!-- Controls: Server Switcher & Fullscreen -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="switchStreamSource()" id="sourceSwitchBtn" class="bg-white/10 hover:bg-white/20 text-xs text-white px-3 py-1.5 rounded-lg border border-white/15 transition-colors flex items-center gap-1.5 cursor-pointer" title="สลับช่องทางสัญญาณสำรอง">
+      <!-- Controls: Server Switcher, Fullscreen Toggle, Close -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <button onclick="switchStreamSource()" id="sourceSwitchBtn" class="bg-white/10 hover:bg-white/20 text-xs text-white px-2.5 sm:px-3 py-1.5 rounded-lg border border-white/15 transition-colors flex items-center gap-1.5 cursor-pointer" title="สลับช่องทางสัญญาณ">
           <i class="fa-solid fa-bolt text-amber-400"></i>
           <span class="hidden sm:inline">สัญญาณความเร็วสูง</span>
         </button>
 
-        <button onclick="toggleTheaterFullscreen()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer" title="เต็มจอ (F)">
-          <i class="fa-solid fa-expand text-xs"></i>
+        <button onclick="toggleTheaterFullscreen()" id="fullscreenBtn" class="fullscreen-toggle w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer" title="เต็มจอ (F)">
+          <i class="fa-solid fa-expand text-xs sm:text-sm"></i>
         </button>
 
-        <button onclick="closePlayer()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="ปิด">
+        <button onclick="closePlayer()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="ปิด">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
     </div>
 
-    <!-- Video Canvas Container -->
-    <div class="relative w-full h-full flex items-center justify-center p-0 sm:p-6 lg:p-12">
+    <!-- Video Canvas Container (True Edge-to-Edge) -->
+    <div id="playerCanvasContainer" class="relative w-full h-full flex items-center justify-center p-0 m-0">
       <!-- Ambient Backglow -->
       <div class="ambient-glow"></div>
 
-      <!-- Video Wrapper -->
-      <div class="relative z-10 w-full max-w-6xl aspect-video bg-black rounded-none sm:rounded-2xl overflow-hidden shadow-2xl border-0 sm:border border-white/10 flex items-center justify-center group">
+      <!-- Video Wrapper (Fills 100% of viewport without letterbox border limits) -->
+      <div id="playerVideoWrapper" class="relative z-10 w-full h-full bg-black flex items-center justify-center group overflow-hidden">
         
-        <video id="mainVideoPlayer" class="w-full h-full object-contain" playsinline preload="auto"></video>
+        <video id="mainVideoPlayer" class="w-full h-full object-contain" playsinline webkit-playsinline preload="auto"></video>
 
         <!-- Player Spinner -->
         <div id="playerBuffering" class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center space-y-3 z-20 pointer-events-none transition-opacity duration-200">
@@ -722,12 +722,12 @@
         </div>
 
         <!-- Custom Player Overlay Controls -->
-        <div id="playerControlsOverlay" class="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 sm:p-6 z-30 pointer-events-none">
+        <div id="playerControlsOverlay" class="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/30 flex flex-col justify-between p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] z-30 pointer-events-none">
           
           <!-- Middle big play/pause trigger -->
           <div class="flex-1 flex items-center justify-center pointer-events-auto cursor-pointer" onclick="togglePlayPause()">
-            <div id="middlePlayIcon" class="w-16 h-16 rounded-full bg-[#ff1e38]/90 hover:bg-[#ff1e38] text-white flex items-center justify-center shadow-2xl transition-transform transform active:scale-90">
-              <i class="fa-solid fa-play text-2xl ml-1"></i>
+            <div id="middlePlayIcon" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#ff1e38]/90 hover:bg-[#ff1e38] text-white flex items-center justify-center shadow-2xl transition-transform transform active:scale-90">
+              <i class="fa-solid fa-play text-xl sm:text-2xl ml-1"></i>
             </div>
           </div>
 
@@ -744,7 +744,7 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3 sm:gap-4">
                 <button onclick="togglePlayPause()" id="bottomPlayBtn" class="text-white hover:text-[#ff1e38] transition-colors text-lg cursor-pointer">
                   <i class="fa-solid fa-play"></i>
                 </button>
@@ -755,7 +755,7 @@
                   <i class="fa-solid fa-rotate-right"></i> 10s
                 </button>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 hidden sm:flex">
                   <button onclick="toggleMute()" id="volumeBtn" class="text-zinc-300 hover:text-white text-base cursor-pointer">
                     <i class="fa-solid fa-volume-high"></i>
                   </button>
@@ -763,15 +763,19 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="bg-[#11131a] border border-white/20 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer">
+              <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleVideoFit()" id="videoFitBtn" class="text-zinc-300 hover:text-white text-xs px-2 sm:px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 transition-colors flex items-center gap-1.5 cursor-pointer" title="ปรับขนาดวิดีโอ (สัดส่วนปกติ / ซูมเต็มจอ)">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i>
+                  <span id="videoFitText" class="hidden sm:inline">พอดี</span>
+                </button>
+                <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="bg-[#11131a] border border-white/20 text-xs text-white rounded-lg px-2 py-1 outline-none cursor-pointer">
                   <option value="0.75">0.75x</option>
-                  <option value="1.0" selected>1.0x ปกติ</option>
+                  <option value="1.0" selected>1.0x</option>
                   <option value="1.25">1.25x</option>
                   <option value="1.5">1.5x</option>
                   <option value="2.0">2.0x</option>
                 </select>
-                <button onclick="toggleTheaterFullscreen()" class="text-zinc-300 hover:text-white text-base p-1 cursor-pointer">
+                <button onclick="toggleTheaterFullscreen()" class="fullscreen-toggle text-zinc-300 hover:text-white text-base p-1 cursor-pointer" title="เต็มจอ (F)">
                   <i class="fa-solid fa-expand"></i>
                 </button>
               </div>
