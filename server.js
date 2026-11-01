@@ -116,33 +116,45 @@ function parseMovieCards(html) {
 
 // Upstream fetch: Movie list
 async function fetchMovies(page = 1, categoryId = 0) {
-  const form = new URLSearchParams();
-  form.append('action', 'load_more_movies');
-  form.append('page', String(page));
-  form.append('category_id', String(categoryId));
+  try {
+    const form = new URLSearchParams();
+    form.append('action', 'load_more_movies');
+    form.append('page', String(page));
+    form.append('category_id', String(categoryId));
 
-  const response = await fetch(`${UPSTREAM_ORIGIN}/load_more_movies.php`, {
-    method: 'POST',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: form.toString()
-  });
+    const response = await fetch(`${UPSTREAM_ORIGIN}/load_more_movies.php`, {
+      method: 'POST',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        'Origin': UPSTREAM_ORIGIN,
+        'Referer': UPSTREAM_ORIGIN + '/',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: form.toString()
+    });
 
-  if (!response.ok) {
-    throw new Error(`Upstream returned HTTP ${response.status}`);
+    if (!response.ok) {
+      console.warn(`Upstream drama returned HTTP ${response.status}`);
+      return [];
+    }
+
+    const html = await response.text();
+    return parseMovieCards(html);
+  } catch (err) {
+    console.warn('fetchMovies upstream exception:', err.message);
+    return [];
   }
-
-  const html = await response.text();
-  return parseMovieCards(html);
 }
 
 // Upstream fetch: Movie Detail & Stream Link
 async function fetchMovieDetails(id) {
   const response = await fetch(`${UPSTREAM_ORIGIN}/movie-article.php?id=${id}`, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Referer': UPSTREAM_ORIGIN + '/',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
     }
   });
 
@@ -661,12 +673,12 @@ app.get('/api/movies', async (req, res) => {
       success: true,
       page,
       category,
-      count: movies.length,
-      data: movies
+      count: (movies || []).length,
+      data: movies || []
     });
   } catch (err) {
     console.error('Error fetching movies:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, page: 1, category: 0, count: 0, data: [] });
   }
 });
 
@@ -717,15 +729,42 @@ app.get('/api/featured', async (req, res) => {
       // Pick top trending IDs for hero showcase
       const topIds = ['1005', '942', '2702', '2624', '20'];
       const details = await Promise.allSettled(topIds.map((id) => fetchMovieDetails(id)));
-      return details
+      let results = details
         .filter((r) => r.status === 'fulfilled' && r.value.streamUrl)
         .map((r) => r.value);
+
+      // Fallback to top cinema movies if drama upstream is unreachable
+      if (results.length === 0) {
+        try {
+          const cinemaMovies = await fetchCinemaCatalog(1, 0);
+          if (cinemaMovies && cinemaMovies.length > 0) {
+            results = cinemaMovies.slice(0, 5).map((c) => ({
+              id: c.id,
+              slug: c.slug,
+              title: c.title,
+              genre: 'ภาพยนตร์ชนโรง 4K',
+              poster: c.poster,
+              streamUrl: `/api/proxy/hls/vdohls.com/${c.slug}/playlist.m3u8`,
+              mirrorStreamUrl: '',
+              proxyStreamUrl: '',
+              views: '10,000+',
+              rating: c.rating || '8.9',
+              description: c.synopsis || 'รับชมภาพยนตร์ยอดนิยมระดับ 4K Ultra HD คมชัดเต็มอารมณ์',
+              isCinema: true
+            }));
+          }
+        } catch (e) {
+          console.warn('Cinema fallback for billboard error:', e.message);
+        }
+      }
+
+      return results;
     });
 
     res.json({ success: true, data: featured });
   } catch (err) {
     console.error('Error fetching featured:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: [] });
   }
 });
 
@@ -1003,6 +1042,8 @@ app.use((req, res) => {
 });
 
 // Start server
+module.exports = app;
+
 app.listen(PORT, () => {
   console.log(`[mimi]: cinema core online -> http://localhost:${PORT}`);
 });

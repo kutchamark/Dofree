@@ -1,7 +1,7 @@
 // public/sw.js
 // javascript / sw.js / service worker / web / dofree pwa offline shell
 
-const CACHE_NAME = 'dofree-pwa-v1';
+const CACHE_NAME = 'dofree-pwa-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -36,6 +36,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
+  
+  // Ignore non-http/https schemes (e.g. chrome-extension://, moz-extension://)
+  if (!request.url.startsWith('http://') && !request.url.startsWith('https://')) {
+    return;
+  }
+
   const url = new URL(request.url);
 
   // Network-first for dynamic API and Proxy video/image streams
@@ -58,4 +64,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-

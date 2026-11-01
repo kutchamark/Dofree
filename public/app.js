@@ -304,12 +304,35 @@ async function initNetflixBillboard() {
   try {
     const res = await fetch('/api/featured');
     const json = await res.json();
-    if (json.success && json.data.length > 0) {
+    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
       state.featuredList = json.data;
       setBillboardMovie(json.data[0]);
+      return;
     }
   } catch (e) {
-    console.error('Failed to load billboard:', e);
+    console.warn('Billboard featured failed, trying cinema fallback:', e.message);
+  }
+
+  // Fallback to top cinema catalog for billboard hero
+  try {
+    const res2 = await fetch('/api/cinema/catalog?page=1');
+    const json2 = await res2.json();
+    if (json2.success && Array.isArray(json2.data) && json2.data.length > 0) {
+      const topMovie = json2.data[0];
+      setBillboardMovie({
+        id: topMovie.id,
+        slug: topMovie.slug,
+        title: topMovie.title,
+        genre: 'ภาพยนตร์ชนโรง 4K',
+        poster: topMovie.poster,
+        rating: topMovie.rating || '8.9',
+        description: topMovie.synopsis || 'ภาพยนตร์ชนโรงยอดนิยมระดับ 4K Ultra HD คมชัดเต็มตา',
+        isCinema: true,
+        link: topMovie.link
+      });
+    }
+  } catch (err2) {
+    console.error('Billboard complete fallback error:', err2);
   }
 }
 
@@ -324,14 +347,22 @@ function setBillboardMovie(movie) {
 }
 
 function playBillboardMovie() {
-  if (state.activeBillboardMovie) {
-    playMovie(state.activeBillboardMovie);
+  if (!state.activeBillboardMovie) return;
+  const b = state.activeBillboardMovie;
+  if (b.isCinema) {
+    playCinemaDirect(b.id, b.slug, encodeURIComponent(b.link || ''));
+  } else {
+    playMovie(b);
   }
 }
 
 function openBillboardInfo() {
-  if (state.activeBillboardMovie) {
-    openDetailModal(state.activeBillboardMovie.id);
+  if (!state.activeBillboardMovie) return;
+  const b = state.activeBillboardMovie;
+  if (b.isCinema) {
+    openCinemaDetailModal(b.id, b.slug, encodeURIComponent(b.link || ''));
+  } else {
+    openDetailModal(b.id);
   }
 }
 
@@ -343,60 +374,45 @@ function toggleBillboardMute() {
 // NETFLIX HOME MULTI-ROW SLIDERS
 // -------------------------------------------------------------
 async function initNetflixRows() {
-  // Row 0: DoFree Cinema Movies
-  if (el.rowCinema) {
-    fetch('/api/cinema/catalog?page=1')
-      .then((r) => r.json())
+  function safeLoadRow(rowId, url, type) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const section = row.closest('section');
+    fetch(url)
+      .then((r) => r.ok ? r.json() : { success: false, data: [] })
       .then((j) => {
-        if (j.success) renderNetflixRow(el.rowCinema, j.data, 'cinema');
+        if (j.success && Array.isArray(j.data) && j.data.length > 0) {
+          renderNetflixRow(row, j.data, type);
+        } else if (section) {
+          section.classList.add('hidden');
+        }
       })
-      .catch((e) => console.error('Cinema row error:', e));
+      .catch((e) => {
+        console.warn('Row load failed for ' + rowId + ':', e.message);
+        if (section) section.classList.add('hidden');
+      });
   }
+
+  // Row 0: DoFree Cinema Movies
+  safeLoadRow('row-cinema', '/api/cinema/catalog?page=1', 'cinema');
 
   // Row 0.5: Cinema New 2026
-  if (el.rowCinemaNew) {
-    fetch('/api/cinema/catalog?page=1&category=46868')
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.success) renderNetflixRow(el.rowCinemaNew, j.data, 'cinema');
-      })
-      .catch((e) => console.error('Cinema new row error:', e));
-  }
+  safeLoadRow('row-cinema-new', '/api/cinema/catalog?page=1&category=46868', 'cinema');
 
   // Row 1: Trending Dramas
-  fetch('/api/movies?page=1&category=0')
-    .then((r) => r.json())
-    .then((j) => {
-      if (j.success) renderNetflixRow(el.rowTrending, j.data, 'drama');
-    });
+  safeLoadRow('row-trending', '/api/movies?page=1&category=0', 'drama');
 
   // Row 2: Trending Manga
-  fetch('/api/manga/catalog?page=1')
-    .then((r) => r.json())
-    .then((j) => {
-      if (j.success) renderNetflixRow(el.rowManga, j.data, 'manga');
-    });
+  safeLoadRow('row-manga', '/api/manga/catalog?page=1', 'manga');
 
   // Row 3: New Dramas
-  fetch('/api/movies?page=1&category=5')
-    .then((r) => r.json())
-    .then((j) => {
-      if (j.success) renderNetflixRow(el.rowNew, j.data, 'drama');
-    });
+  safeLoadRow('row-new', '/api/movies?page=1&category=5', 'drama');
 
   // Row 4: Romance Dramas
-  fetch('/api/movies?page=1&category=15')
-    .then((r) => r.json())
-    .then((j) => {
-      if (j.success) renderNetflixRow(el.rowRomance, j.data, 'drama');
-    });
+  safeLoadRow('row-romance', '/api/movies?page=1&category=15', 'drama');
 
   // Row 5: Revenge Dramas
-  fetch('/api/movies?page=1&category=13')
-    .then((r) => r.json())
-    .then((j) => {
-      if (j.success) renderNetflixRow(el.rowRevenge, j.data, 'drama');
-    });
+  safeLoadRow('row-revenge', '/api/movies?page=1&category=13', 'drama');
 }
 
 function renderNetflixRow(rowEl, items, type = 'drama') {
