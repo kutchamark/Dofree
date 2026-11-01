@@ -1,0 +1,873 @@
+<!-- public/index.html -->
+<!-- html / public/index.html / html5 / web / dofree ultra-premium streaming platform -->
+
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>DoFree — สตรีมมิ่งภาพยนตร์ ซีรีส์ และมังงะ ฟรีระดับ 4K Ultra HD</title>
+  
+  <meta name="description" content="ดูภาพยนตร์ชนโรง บล็อกบัสเตอร์ ซีรีส์จีน และอ่านการ์ตูนมังงะความละเอียดสูงฟรี ไม่มีโฆษณาคั่น โหลดไวระดับพรีเมียม">
+  <meta name="referrer" content="no-referrer">
+
+  <!-- ========================================== -->
+  <!-- iOS Safari & Web App Meta Tags (Add to Home Screen) -->
+  <!-- ========================================== -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DoFree VIP">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+
+  <!-- PWA Web App Manifest & Favicons -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+  <meta name="theme-color" content="#08090d">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            dofree: {
+              red: '#ff1e38',
+              crimson: '#e50914',
+              glow: 'rgba(255, 30, 56, 0.45)',
+              canvas: '#08090d',
+              dark: '#050608',
+              card: '#11131a',
+              cardHover: '#191c28'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Outfit, Kanit & Bebas Neue -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Kanit:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-[#08090d] text-white min-h-screen flex flex-col antialiased select-none pb-24 md:pb-0 font-sans">
+
+  <!-- DOFREE FLOATING GLASS NAVIGATION -->
+  <header id="mainHeader" class="fixed top-0 left-0 right-0 z-50 dofree-navbar transition-all duration-500">
+    <div class="max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-4">
+      
+      <!-- Brand & Left Menu -->
+      <div class="flex items-center gap-5 lg:gap-10">
+        <!-- DoFree Brand Logo -->
+        <a href="/" onclick="handleNavClick(event, 'home')" class="flex items-center gap-2 cursor-pointer group">
+          <span class="dofree-brand text-2xl sm:text-3xl font-black tracking-tight">
+            <span class="text-white group-hover:text-zinc-200 transition-colors">Do</span><span class="text-gradient-dofree">Free</span>
+          </span>
+          <span class="vip-pill-badge text-[9px] font-extrabold uppercase text-white px-2 py-0.5 rounded-full tracking-wider border border-white/20 shadow">
+            VIP
+          </span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-3.5 lg:gap-6 text-xs lg:text-sm">
+          <button onclick="switchView('home')" id="nav-home" class="nav-link-btn active font-bold text-white transition-colors cursor-pointer py-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-house text-xs text-[#ff1e38]"></i>
+            <span>หน้าแรก</span>
+          </button>
+          <button onclick="switchView('movies')" id="nav-movies" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-clapperboard text-xs text-[#ff1e38]"></i>
+            <span>ภาพยนตร์ชนโรง</span>
+          </button>
+          <button onclick="switchView('dramas')" id="nav-dramas" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-film text-xs text-amber-400"></i>
+            <span>ซีรีส์จีน</span>
+          </button>
+          <button onclick="switchView('manga')" id="nav-manga" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-book-open text-xs text-emerald-400"></i>
+            <span>อ่านการ์ตูน / มังงะ</span>
+          </button>
+          <button onclick="switchView('popular')" id="nav-popular" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-fire text-xs text-amber-500"></i>
+            <span>มาใหม่ &amp; ยอดฮิต</span>
+          </button>
+          <button onclick="switchView('favorites')" id="nav-fav" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-heart text-xs text-rose-400"></i>
+            <span>รายการของฉัน</span>
+          </button>
+          <button onclick="switchView('history')" id="nav-hist" class="nav-link-btn text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 py-1">
+            <i class="fa-solid fa-clock-rotate-left text-xs text-cyan-400"></i>
+            <span>ประวัติ</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right Controls: Search, PWA install guide button, Notifications, Avatar -->
+      <div class="flex items-center gap-2.5 sm:gap-4">
+        
+        <!-- DoFree Ultra-Clean Search Bar -->
+        <div class="relative flex items-center">
+          <div class="flex items-center bg-[#12141c]/80 backdrop-blur border border-white/10 rounded-full px-3.5 py-1.5 focus-within:border-[#ff1e38]/70 focus-within:bg-[#151824] transition-all w-32 sm:w-60 lg:w-72 shadow-lg">
+            <i class="fa-solid fa-magnifying-glass text-zinc-400 text-xs sm:text-sm mr-2.5"></i>
+            <input 
+              type="text" 
+              id="globalSearchInput" 
+              placeholder="ค้นหาหนัง, ซีรีส์ หรือ มังงะ..." 
+              autocomplete="off"
+              class="bg-transparent border-none outline-none text-xs sm:text-sm text-white w-full placeholder:text-zinc-500 font-light"
+            />
+            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden text-zinc-400 hover:text-white text-xs ml-1">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Quick Dropdown Results -->
+          <div id="searchDropdown" class="hidden absolute top-full right-0 mt-2.5 w-76 sm:w-96 modal-glass-container rounded-2xl shadow-2xl p-2 z-50 max-h-[480px] overflow-y-auto">
+            <div id="searchDropdownContent" class="space-y-1"></div>
+          </div>
+        </div>
+
+        <!-- iOS / Mobile Install Prompt Button -->
+        <button 
+          id="pwaInstallBtn" 
+          onclick="showIosInstallGuide()" 
+          class="hidden sm:flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+          title="ติดตั้งลงหน้าจอโฮม">
+          <i class="fa-solid fa-arrow-down-to-bracket text-[#ff1e38]"></i>
+          <span class="hidden md:inline">ติดตั้งแอพ</span>
+        </button>
+
+        <!-- Notification Bell (Decoration) -->
+        <button onclick="showToast('ระบบแจ้งเตือน DoFree พร้อมใช้งาน', 'info')" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors flex items-center justify-center text-sm hidden sm:flex border border-white/10">
+          <i class="fa-solid fa-bell"></i>
+        </button>
+
+        <!-- Profile Avatar (DoFree VIP) -->
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff1e38] via-rose-600 to-amber-500 flex items-center justify-center font-bold text-xs shadow-lg cursor-pointer border border-white/30">
+          <i class="fa-solid fa-crown text-white text-[11px]"></i>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: DOFREE HOME BROWSE (MULTI-ROW)     -->
+    <!-- ========================================== -->
+    <div id="homeViewContainer" class="w-full">
+      
+      <!-- HERO BILLBOARD -->
+      <section id="heroBillboard" class="relative w-full h-[72vh] sm:h-[82vh] lg:h-[90vh] overflow-hidden flex items-end">
+        <!-- Ambient lighting glow -->
+        <div class="hero-top-ambient"></div>
+
+        <!-- Hero Background Image -->
+        <img 
+          id="billboardBg" 
+          src="" 
+          alt="Featured Billboard" 
+          class="absolute inset-0 w-full h-full object-cover object-top filter brightness-85 transition-opacity duration-700 opacity-0"
+        />
+
+        <!-- DoFree Vignette & Bottom Gradients -->
+        <div class="absolute inset-0 hero-vignette pointer-events-none"></div>
+        <div class="absolute inset-0 hero-fade-bottom pointer-events-none"></div>
+
+        <!-- Billboard Content Box -->
+        <div class="relative z-20 max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 pb-16 sm:pb-24 lg:pb-32 w-full space-y-4 sm:space-y-5">
+          
+          <!-- Top Badge -->
+          <div class="flex items-center gap-2.5">
+            <span class="bg-gradient-to-r from-[#ff1e38] to-rose-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(255,30,56,0.4)]">
+              DoFree EXCLUSIVE
+            </span>
+            <span class="text-xs sm:text-sm font-semibold tracking-wide text-zinc-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-fire text-amber-400"></i> อันดับ 1 ในไทยวันนี้
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 id="billboardTitle" class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_25px_rgba(0,0,0,0.9)] max-w-3xl line-clamp-2">
+            กำลังโหลด...
+          </h1>
+
+          <!-- Metadata Badges -->
+          <div class="flex items-center flex-wrap gap-2.5 text-xs sm:text-sm text-zinc-300">
+            <span class="text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-[10px]"></i> ตรงใจ 99%
+            </span>
+            <span class="bg-white/10 backdrop-blur border border-white/20 text-white px-2 py-0.5 rounded text-[11px] font-bold">4K ULTRA HD</span>
+            <span class="bg-white/10 backdrop-blur border border-white/20 text-white px-2 py-0.5 rounded text-[11px]">DOLBY ATMOS</span>
+            <span id="billboardGenre" class="text-zinc-200">ความรัก</span>
+            <div class="flex items-center text-amber-400 gap-1 ml-1 bg-amber-950/50 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]">
+              <i class="fa-solid fa-star text-[10px]"></i>
+              <span id="billboardRating" class="font-bold text-white">8.9</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <p id="billboardDesc" class="text-xs sm:text-sm lg:text-base text-zinc-300/90 max-w-2xl line-clamp-3 font-light leading-relaxed drop-shadow">
+            สัมผัสประสบการณ์ความสนุกระดับมาสเตอร์พีซ สตรีมมิ่งความเร็วสูงระดับ 4K คมชัดทุกรายละเอียด ไม่มีโฆษณาคั่น
+          </p>
+
+          <!-- Buttons -->
+          <div class="flex items-center gap-3.5 pt-2">
+            <button 
+              id="billboardPlayBtn" 
+              onclick="playBillboardMovie()" 
+              class="bg-white hover:bg-zinc-200 text-black text-sm sm:text-base font-extrabold px-7 sm:px-9 py-2.5 sm:py-3.5 rounded-xl flex items-center gap-2.5 shadow-[0_0_30px_rgba(255,255,255,0.35)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
+              <i class="fa-solid fa-play text-base text-black"></i>
+              <span>รับชมทันที</span>
+            </button>
+
+            <button 
+              id="billboardInfoBtn" 
+              onclick="openBillboardInfo()" 
+              class="bg-white/10 hover:bg-white/20 text-white text-sm sm:text-base font-semibold px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-xl backdrop-blur-md border border-white/15 flex items-center gap-2.5 transition-all hover:scale-105 cursor-pointer">
+              <i class="fa-solid fa-circle-info text-base"></i>
+              <span>ข้อมูลเรื่องย่อ</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Age & Audio Badges on Bottom Right -->
+        <div class="absolute bottom-16 sm:bottom-24 right-4 sm:right-8 lg:right-12 z-20 flex items-center gap-3">
+          <button onclick="toggleBillboardMute()" id="billboardMuteBtn" class="w-10 h-10 rounded-full border border-white/20 bg-black/50 hover:bg-black/70 text-white flex items-center justify-center text-sm transition-colors cursor-pointer backdrop-blur">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+          <span class="bg-black/70 border-l-2 border-[#ff1e38] px-2.5 py-1 text-xs text-zinc-200 font-bold tracking-wider backdrop-blur">
+            13+
+          </span>
+        </div>
+      </section>
+
+      <!-- DOFREE CONTENT SLIDERS (ROWS) -->
+      <div class="relative z-30 -mt-10 sm:-mt-16 lg:-mt-24 max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 space-y-9 sm:space-y-12 pb-20">
+        
+        <!-- ROW 1: ภาพยนตร์ชนโรง & บล็อกบัสเตอร์ยอดนิยม -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="switchView('movies')">
+              <span class="w-2 h-5 rounded-full bg-[#ff1e38]"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-clapperboard text-[#ff1e38] text-sm sm:text-base"></i>
+                <span>ภาพยนตร์ชนโรง &amp; บล็อกบัสเตอร์ยอดนิยม (4K Ultra HD)</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-cinema', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-cinema" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cinema Movie Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-cinema', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 2: ภาพยนตร์มาใหม่ล่าสุด 2026 -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="filterCinemaCategory(46868)">
+              <span class="w-2 h-5 rounded-full bg-rose-500"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-sparkles text-rose-400 text-sm sm:text-base"></i>
+                <span>ภาพยนตร์ใหม่ 2026 พากย์ไทย &amp; ซับไทยคมชัด</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-cinema-new', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-cinema-new" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cinema New 2026 Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-cinema-new', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 3: ซีรีส์จีนกำลังฮิตติดลมบน -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="switchView('dramas')">
+              <span class="w-2 h-5 rounded-full bg-amber-500"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-fire text-amber-400 text-sm sm:text-base"></i>
+                <span>ซีรีส์จีนยอดฮิตติดชาร์ต</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-trending', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-trending" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-trending', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 4: มังงะ & มันฮวายอดนิยม -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="switchView('manga')">
+              <span class="w-2 h-5 rounded-full bg-emerald-500"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-book-open text-emerald-400 text-sm sm:text-base"></i>
+                <span>มังงะ &amp; มันฮวาแปลไทย (อ่านฟรี โหลดไว ภาพชัด HD)</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-manga', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-manga" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Manga Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-manga', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 5: ซีรีส์มาใหม่ล่าสุด -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="filterDramaCategory(5)">
+              <span class="w-2 h-5 rounded-full bg-purple-500"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-sm sm:text-base"></i>
+                <span>ซีรีส์มาใหม่ล่าสุด</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-new', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-new" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-new', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 6: โรแมนติก & ความรัก -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="filterDramaCategory(15)">
+              <span class="w-2 h-5 rounded-full bg-pink-500"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-heart text-pink-400 text-sm sm:text-base"></i>
+                <span>โรแมนติก &amp; ความรักหวานซึ้ง</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-romance', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-romance" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-romance', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- ROW 7: ล้างแค้น & พลิกเกม -->
+        <section class="slider-container space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-wide text-white flex items-center gap-2.5 cursor-pointer group" onclick="filterDramaCategory(13)">
+              <span class="w-2 h-5 rounded-full bg-red-600"></span>
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-skull-crossbones text-red-500 text-sm sm:text-base"></i>
+                <span>แก้แค้น &amp; พลิกเกมเชือดเฉือน</span>
+              </span>
+              <span class="text-xs sm:text-sm font-semibold text-[#ff1e38] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">ดูทั้งหมด <i class="fa-solid fa-angle-right text-xs"></i></span>
+            </h2>
+          </div>
+          <div class="relative group/row">
+            <button class="slider-btn left" onclick="scrollSlider('row-revenge', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="row-revenge" class="flex gap-2.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-3">
+              <!-- Cards rendered dynamically -->
+            </div>
+            <button class="slider-btn right" onclick="scrollSlider('row-revenge', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: FULL CATALOG GRID (MOVIES/DRAMAS)  -->
+    <!-- ========================================== -->
+    <div id="catalogViewContainer" class="hidden max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-20 space-y-6 sm:space-y-7">
+      
+      <!-- Category Segmented Tabs -->
+      <div class="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto no-scrollbar">
+        <button id="catTabCinema" onclick="switchCategoryTab('movies')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#ff1e38] text-white transition-all shadow-md flex-shrink-0 cursor-pointer">
+          <i class="fa-solid fa-clapperboard"></i>
+          <span>ภาพยนตร์ชนโรง</span>
+        </button>
+        <button id="catTabDrama" onclick="switchCategoryTab('dramas')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-zinc-300 transition-all flex-shrink-0 cursor-pointer border border-white/10">
+          <i class="fa-solid fa-film text-amber-400"></i>
+          <span>ซีรีส์จีน</span>
+        </button>
+        <button id="catTabManga" onclick="switchCategoryTab('manga')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white/5 hover:bg-white/10 text-zinc-300 transition-all flex-shrink-0 cursor-pointer border border-white/10">
+          <i class="fa-solid fa-book-open text-emerald-400"></i>
+          <span>มังงะ &amp; การ์ตูน</span>
+        </button>
+      </div>
+
+      <!-- Category Chips Container -->
+      <div id="dramaCategoryChipsWrapper" class="relative">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1" id="categoryChips"></div>
+      </div>
+
+      <!-- View Title & Count Indicator -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-2.5 h-6 rounded-full bg-[#ff1e38] shadow-[0_0_12px_rgba(255,30,56,0.6)]"></div>
+          <h2 id="catalogTitle" class="text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-wide">ภาพยนตร์ทั้งหมด</h2>
+          <span id="catalogBadge" class="text-[11px] sm:text-xs bg-white/10 border border-white/10 text-zinc-300 px-2.5 py-0.5 rounded-full font-medium">4K Ultra HD</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 text-xs sm:text-sm text-zinc-400">
+          <span id="catalogCount" class="font-mono text-xs">กำลังโหลด...</span>
+          <button onclick="reloadActiveCatalog()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-colors border border-white/10" title="รีเฟรช">
+            <i class="fa-solid fa-rotate-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Grid -->
+      <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5"></div>
+
+      <!-- Loading / Sentinel -->
+      <div id="catalogSentinel" class="h-10 w-full" aria-hidden="true"></div>
+
+      <div id="catalogLoading" class="flex flex-col items-center justify-center py-16 space-y-3">
+        <div class="w-12 h-12 border-4 border-[#ff1e38]/20 border-t-[#ff1e38] rounded-full animate-spin"></div>
+        <p class="text-zinc-400 text-xs sm:text-sm font-light tracking-wider">กำลังโหลดรายการคอนเทนต์...</p>
+      </div>
+
+      <div id="catalogEnd" class="hidden text-center py-16 text-zinc-500 text-sm">
+        <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2.5 block"></i>
+        คุณได้รับชมคอนเทนต์ทั้งหมดในส่วนนี้แล้ว
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: DOFREE DETAIL PREVIEW (PREMIUM)   -->
+  <!-- ========================================== -->
+  <div id="detailModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl hidden items-center justify-center p-2 sm:p-4 transition-all duration-300">
+    <div class="modal-glass-container w-full max-w-4xl rounded-2xl overflow-hidden relative max-h-[92vh] flex flex-col">
+      
+      <!-- Close button -->
+      <button onclick="closeDetailModal()" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/70 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <!-- Modal Content (Scrollable) -->
+      <div class="overflow-y-auto">
+        <!-- Banner Header -->
+        <div class="relative w-full h-64 sm:h-80 lg:h-96 bg-black">
+          <img id="modalBannerImg" src="" alt="" class="w-full h-full object-cover object-top opacity-85" />
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0e1017] via-[#0e1017]/50 to-transparent"></div>
+          
+          <div class="absolute bottom-6 left-6 right-6 space-y-3.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-[#ff1e38] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">DoFree 4K</span>
+              <span class="text-xs text-zinc-300">สตรีมมิ่งความเร็วสูง</span>
+            </div>
+
+            <h2 id="modalTitle" class="text-2xl sm:text-4xl font-black text-white drop-shadow-xl line-clamp-2">ชื่อเรื่อง</h2>
+            
+            <div class="flex items-center gap-3 pt-1">
+              <button id="modalPlayBtn" onclick="playCurrentModalMovie()" class="bg-white hover:bg-zinc-200 text-black font-extrabold text-sm sm:text-base px-7 py-3 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-play"></i> รับชมทันที
+              </button>
+              <button id="modalFavBtn" onclick="toggleFavoriteFromModal()" class="w-11 h-11 rounded-xl border border-white/20 bg-black/50 hover:bg-white/10 text-white flex items-center justify-center transition-colors cursor-pointer backdrop-blur">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta & Synopsis Body -->
+        <div class="p-6 sm:p-8 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Left 2 cols: Synopsis -->
+            <div class="md:col-span-2 space-y-3.5">
+              <div class="flex items-center flex-wrap gap-2.5 text-xs sm:text-sm text-zinc-300">
+                <span class="text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[10px]"></i> ตรงใจ 99%
+                </span>
+                <span id="modalRating" class="text-amber-400 font-bold bg-amber-950/50 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]"><i class="fa-solid fa-star mr-1"></i>8.8</span>
+                <span class="bg-white/10 border border-white/20 px-2 py-0.5 rounded text-[11px] font-bold">1080p Full HD</span>
+                <span id="modalViews" class="text-zinc-400">2026 • ชนโรง</span>
+              </div>
+              <p id="modalDescription" class="text-sm sm:text-base text-zinc-300 leading-relaxed font-light">
+                กำลังโหลดรายละเอียดเรื่องย่อ...
+              </p>
+            </div>
+
+            <!-- Right col: Badges -->
+            <div class="space-y-2.5 text-xs sm:text-sm text-zinc-400 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+              <div><span class="text-zinc-500">ประเภท:</span> <span id="modalGenreText" class="text-white font-medium">ภาพยนตร์</span></div>
+              <div><span class="text-zinc-500">คุณภาพ:</span> <span class="text-emerald-400 font-semibold">Full HD 1080p 60FPS</span></div>
+              <div><span class="text-zinc-500">ระบบเสียง:</span> <span class="text-white">พากย์ไทย 5.1 / ซับไตเติล</span></div>
+              <div><span class="text-zinc-500">เซิร์ฟเวอร์:</span> <span class="text-amber-400">DoFree High-Speed CDN</span></div>
+            </div>
+          </div>
+
+          <!-- Related Content -->
+          <div class="space-y-3 pt-6 border-t border-white/10">
+            <h4 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+              <span class="w-1.5 h-4 bg-[#ff1e38] rounded-full"></span>
+              <span>เรื่องที่คล้ายกันที่คุณอาจชอบ</span>
+            </h4>
+            <div id="modalRelatedGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-3.5"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: MANGA DETAIL & CHAPTER LIST       -->
+  <!-- ========================================== -->
+  <div id="mangaModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl hidden items-center justify-center p-2 sm:p-4 transition-all duration-300">
+    <div class="modal-glass-container w-full max-w-4xl rounded-2xl overflow-hidden relative max-h-[92vh] flex flex-col">
+      
+      <!-- Close button -->
+      <button onclick="closeMangaModal()" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/70 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="overflow-y-auto p-6 sm:p-8 space-y-6">
+        
+        <!-- Header Info -->
+        <div class="flex flex-col sm:flex-row gap-6 items-start">
+          <div class="w-full sm:w-48 aspect-[3/4] rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-shrink-0 shadow-2xl">
+            <img id="mangaModalCover" src="" alt="" class="w-full h-full object-cover" />
+          </div>
+
+          <div class="flex-1 space-y-3.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs px-2.5 py-0.5 rounded-full font-bold">มังงะ / มันฮวา</span>
+              <span id="mangaModalChCount" class="text-xs bg-white/10 text-zinc-300 px-2.5 py-0.5 rounded-full">0 ตอน</span>
+            </div>
+
+            <h2 id="mangaModalTitle" class="text-xl sm:text-3xl font-extrabold text-white tracking-tight">ชื่อเรื่อง</h2>
+
+            <p id="mangaModalSynopsis" class="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light max-h-32 overflow-y-auto">
+              กำลังโหลดเรื่องย่อ...
+            </p>
+
+            <!-- Read Buttons -->
+            <div class="flex items-center gap-3 pt-2">
+              <button id="mangaStartFirstBtn" onclick="readFirstChapter()" class="bg-[#ff1e38] hover:bg-[#ff334b] text-white font-bold text-sm px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-book-open"></i> เริ่มอ่านตอนแรก
+              </button>
+              <button id="mangaStartLatestBtn" onclick="readLatestChapter()" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-5 py-2.5 rounded-xl border border-white/15 flex items-center gap-2 transition-all hover:scale-105 cursor-pointer">
+                <i class="fa-solid fa-clock-rotate-left"></i> ตอนล่าสุด
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chapters Grid -->
+        <div class="space-y-3 pt-4 border-t border-white/10">
+          <h4 class="text-base font-bold text-white tracking-wide">สารบัญตอนทั้งหมด</h4>
+          <div id="mangaChapterList" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5 max-h-72 overflow-y-auto pr-1"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: ZERO-STORAGE MANGA READER VIEW    -->
+  <!-- ========================================== -->
+  <div id="readerModal" class="fixed inset-0 z-50 bg-black hidden flex-col overflow-y-auto">
+    
+    <!-- Reader Top Sticky Bar -->
+    <header class="sticky top-0 left-0 right-0 z-30 bg-[#08090d]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3 flex items-center justify-between shadow-2xl">
+      <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+        <button onclick="closeReader()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="กลับ">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <div class="truncate">
+          <h3 id="readerChapterTitle" class="text-xs sm:text-sm font-bold text-white truncate">ชื่อตอน</h3>
+          <span id="readerPageCount" class="text-[10px] text-zinc-400">0 หน้า</span>
+        </div>
+      </div>
+
+      <!-- Chapter Switcher -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="readerPrevBtn" onclick="navigateChapter('prev')" class="bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-chevron-left text-[10px]"></i>
+          <span class="hidden sm:inline">ตอนก่อนหน้า</span>
+        </button>
+
+        <select id="readerChapterSelect" onchange="onChapterSelectChange(this.value)" class="bg-[#12141c] border border-white/20 text-xs text-white rounded-lg px-2.5 py-1.5 outline-none cursor-pointer max-w-[140px] sm:max-w-[200px]"></select>
+
+        <button id="readerNextBtn" onclick="navigateChapter('next')" class="bg-[#ff1e38] hover:bg-[#ff334b] disabled:opacity-30 disabled:pointer-events-none text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+          <span class="hidden sm:inline">ตอนถัดไป</span>
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Continuous Webtoon Image Stream Container -->
+    <div id="mangaStreamWrap" class="manga-stream-wrap flex-1 w-full my-0 py-0"></div>
+
+    <!-- Reader Loading State -->
+    <div id="readerLoading" class="py-24 flex flex-col items-center justify-center space-y-4">
+      <div class="w-12 h-12 border-4 border-[#ff1e38]/20 border-t-[#ff1e38] rounded-full animate-spin"></div>
+      <p class="text-zinc-400 text-xs tracking-wider">กำลังโหลดภาพมังงะต้นฉบับ...</p>
+    </div>
+
+    <!-- Bottom Navigation Controls -->
+    <div id="readerBottomNav" class="hidden max-w-xl mx-auto w-full py-12 px-4 flex items-center justify-between gap-4">
+      <button id="readerBottomPrev" onclick="navigateChapter('prev')" class="flex-1 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>ตอนก่อนหน้า</span>
+      </button>
+
+      <button id="readerBottomNext" onclick="navigateChapter('next')" class="flex-1 bg-[#ff1e38] hover:bg-[#ff334b] disabled:opacity-30 disabled:pointer-events-none text-white py-3 rounded-xl text-sm font-bold transition-colors cursor-pointer flex items-center justify-center gap-2">
+        <span>ตอนถัดไป</span>
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 4: DOFREE ULTRA CINEMA VIDEO PLAYER  -->
+  <!-- ========================================== -->
+  <div id="playerModal" class="fixed inset-0 z-50 bg-black hidden flex-col items-center justify-center">
+    
+    <!-- Video Player Top Bar -->
+    <div class="absolute top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-4 sm:p-6 flex items-center justify-between">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <button onclick="closePlayer()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="ออก (Esc)">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+
+        <div>
+          <h3 id="playerMovieTitle" class="text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md lg:max-w-xl">
+            กำลังเล่น...
+          </h3>
+          <div class="flex items-center gap-2 text-[11px] text-zinc-400">
+            <span id="playerMovieGenre">DoFree Cinema</span>
+            <span>•</span>
+            <span class="text-emerald-400 font-semibold" id="playerServerIndicator">Ultra HLS Relay</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Server Switcher & Fullscreen -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="switchStreamSource()" id="sourceSwitchBtn" class="bg-white/10 hover:bg-white/20 text-xs text-white px-3 py-1.5 rounded-lg border border-white/15 transition-colors flex items-center gap-1.5 cursor-pointer" title="สลับช่องทางสัญญาณสำรอง">
+          <i class="fa-solid fa-bolt text-amber-400"></i>
+          <span class="hidden sm:inline">สัญญาณความเร็วสูง</span>
+        </button>
+
+        <button onclick="toggleTheaterFullscreen()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer" title="เต็มจอ (F)">
+          <i class="fa-solid fa-expand text-xs"></i>
+        </button>
+
+        <button onclick="closePlayer()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors cursor-pointer" title="ปิด">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Video Canvas Container -->
+    <div class="relative w-full h-full flex items-center justify-center p-0 sm:p-6 lg:p-12">
+      <!-- Ambient Backglow -->
+      <div class="ambient-glow"></div>
+
+      <!-- Video Wrapper -->
+      <div class="relative z-10 w-full max-w-6xl aspect-video bg-black rounded-none sm:rounded-2xl overflow-hidden shadow-2xl border-0 sm:border border-white/10 flex items-center justify-center group">
+        
+        <video id="mainVideoPlayer" class="w-full h-full object-contain" playsinline preload="auto"></video>
+
+        <!-- Player Spinner -->
+        <div id="playerBuffering" class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center space-y-3 z-20 pointer-events-none transition-opacity duration-200">
+          <div class="w-14 h-14 border-4 border-[#ff1e38]/20 border-t-[#ff1e38] rounded-full animate-spin"></div>
+          <p class="text-white text-xs tracking-wider font-light">กำลังเชื่อมต่อสัญญาณสตรีม 1080p Ultra HD...</p>
+        </div>
+
+        <!-- Custom Player Overlay Controls -->
+        <div id="playerControlsOverlay" class="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 sm:p-6 z-30 pointer-events-none">
+          
+          <!-- Middle big play/pause trigger -->
+          <div class="flex-1 flex items-center justify-center pointer-events-auto cursor-pointer" onclick="togglePlayPause()">
+            <div id="middlePlayIcon" class="w-16 h-16 rounded-full bg-[#ff1e38]/90 hover:bg-[#ff1e38] text-white flex items-center justify-center shadow-2xl transition-transform transform active:scale-90">
+              <i class="fa-solid fa-play text-2xl ml-1"></i>
+            </div>
+          </div>
+
+          <!-- Bottom Control Bar -->
+          <div class="space-y-2.5 pointer-events-auto">
+            <div class="flex items-center gap-3">
+              <span id="playerCurrentTime" class="text-xs font-mono text-zinc-300 min-w-[40px]">00:00</span>
+              <div class="relative flex-1 h-1.5 hover:h-2.5 bg-white/20 rounded-full cursor-pointer group/bar transition-all" id="progressBarContainer" onclick="seekVideo(event)">
+                <div id="playerProgressBar" class="h-full bg-[#ff1e38] rounded-full relative" style="width: 0%;">
+                  <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-md scale-0 group-hover/bar:scale-100 transition-transform"></div>
+                </div>
+              </div>
+              <span id="playerDuration" class="text-xs font-mono text-zinc-400 min-w-[40px]">00:00</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <button onclick="togglePlayPause()" id="bottomPlayBtn" class="text-white hover:text-[#ff1e38] transition-colors text-lg cursor-pointer">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+                <button onclick="skipSeconds(-10)" class="text-zinc-300 hover:text-white transition-colors cursor-pointer text-xs sm:text-sm">
+                  <i class="fa-solid fa-rotate-left"></i> 10s
+                </button>
+                <button onclick="skipSeconds(10)" class="text-zinc-300 hover:text-white transition-colors cursor-pointer text-xs sm:text-sm">
+                  <i class="fa-solid fa-rotate-right"></i> 10s
+                </button>
+
+                <div class="flex items-center gap-2">
+                  <button onclick="toggleMute()" id="volumeBtn" class="text-zinc-300 hover:text-white text-base cursor-pointer">
+                    <i class="fa-solid fa-volume-high"></i>
+                  </button>
+                  <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this.value)" class="w-16 sm:w-20 accent-[#ff1e38] cursor-pointer" />
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="bg-[#11131a] border border-white/20 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer">
+                  <option value="0.75">0.75x</option>
+                  <option value="1.0" selected>1.0x ปกติ</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="2.0">2.0x</option>
+                </select>
+                <button onclick="toggleTheaterFullscreen()" class="text-zinc-300 hover:text-white text-base p-1 cursor-pointer">
+                  <i class="fa-solid fa-expand"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: iOS "Add to Home Screen" GUIDE   -->
+  <!-- ========================================== -->
+  <div id="iosInstallModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-end sm:items-center justify-center p-3 sm:p-4 transition-all">
+    <div class="modal-glass-container w-full max-w-md rounded-3xl p-6 sm:p-7 space-y-5 relative animate-in fade-in slide-in-from-bottom duration-300">
+      <button onclick="closeIosInstallGuide()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-[#ff1e38] text-white flex items-center justify-center transition-colors">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="flex items-center gap-3.5">
+        <img src="/icons/icon-180.png" class="w-14 h-14 rounded-2xl shadow-xl border border-white/15" alt="DoFree VIP" />
+        <div>
+          <h3 class="text-base font-black text-white">ติดตั้ง DoFree ลงหน้าจอโฮม</h3>
+          <p class="text-xs text-zinc-400">เปิดแบบแอพเต็มหน้าจอ ไม่มีแถบเว็บ ใช้งานลื่นไหลระดับ 4K</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs text-zinc-200">
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-[#ff1e38]/20 border border-[#ff1e38]/50 text-[#ff1e38] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">1</div>
+          <p>เปิดเว็บด้วย <strong>Safari บน iPhone / iPad</strong> แล้วกดปุ่ม <strong>แชร์ (Share)</strong> <i class="fa-solid fa-arrow-up-from-bracket text-sky-400 ml-1"></i> ที่แถบด้านล่าง</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-[#ff1e38]/20 border border-[#ff1e38]/50 text-[#ff1e38] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">2</div>
+          <p>เลื่อนลงมาแล้วแตะที่ <strong>"เพิ่มไปยังหน้าจอโฮม" (Add to Home Screen)</strong> <i class="fa-solid fa-plus-square text-emerald-400 ml-1"></i></p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-[#ff1e38]/20 border border-[#ff1e38]/50 text-[#ff1e38] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">3</div>
+          <p>กด <strong>"เพิ่ม" (Add)</strong> ที่มุมขวาบน จะมีไอคอน DoFree บนหน้าจอโฮมทันที!</p>
+        </div>
+      </div>
+
+      <button onclick="closeIosInstallGuide()" class="w-full bg-[#ff1e38] hover:bg-[#ff334b] text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#ff1e38]/25 cursor-pointer">
+        เข้าใจแล้ว
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM APP BAR (Native App Feel with iOS Safe Area) -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c0e15]/95 backdrop-blur-xl border-t border-white/10 px-3 py-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] flex justify-around items-center text-[10px] mobile-bottom-nav">
+    <button onclick="switchView('home')" id="mobile-home" class="flex flex-col items-center text-[#ff1e38] space-y-1">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>หน้าแรก</span>
+    </button>
+    <button onclick="switchView('movies')" id="mobile-movies" class="flex flex-col items-center text-zinc-400 hover:text-white space-y-1">
+      <i class="fa-solid fa-clapperboard text-base"></i>
+      <span>หนังชนโรง</span>
+    </button>
+    <button onclick="switchView('dramas')" id="mobile-dramas" class="flex flex-col items-center text-zinc-400 hover:text-white space-y-1">
+      <i class="fa-solid fa-film text-base"></i>
+      <span>ซีรีส์จีน</span>
+    </button>
+    <button onclick="switchView('manga')" id="mobile-manga" class="flex flex-col items-center text-zinc-400 hover:text-white space-y-1">
+      <i class="fa-solid fa-book-open text-base"></i>
+      <span>การ์ตูน</span>
+    </button>
+    <button onclick="switchView('favorites')" id="mobile-fav" class="flex flex-col items-center text-zinc-400 hover:text-white space-y-1">
+      <i class="fa-solid fa-heart text-base"></i>
+      <span>ของฉัน</span>
+    </button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/10 bg-[#06070a] py-12 text-zinc-500 text-xs mt-auto">
+    <div class="max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <span class="dofree-brand text-lg font-black"><span class="text-white">Do</span><span class="text-gradient-dofree">Free</span></span>
+        <span class="text-zinc-600">|</span>
+        <span>แพลตฟอร์มสตรีมมิ่งภาพยนตร์ ซีรีส์ และการ์ตูนมังงะออนไลน์ระดับ 4K Ultra HD ฟรี ไม่เสียค่าบริการ</span>
+      </div>
+      <div class="flex items-center gap-4 text-zinc-400">
+        <span>4K ULTRA HD</span>
+        <span>•</span>
+        <span>DOLBY ATMOS</span>
+        <span>•</span>
+        <span>PWA READY</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts: Hls.js, SweetAlert2, App -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
