@@ -1258,8 +1258,12 @@ async function openCinemaDetailModal(id, slug, encodedLink) {
   try {
     const linkParam = encodedLink ? `&link=${encodedLink}` : '';
     const res = await fetch(`/api/cinema/detail?id=${id || ''}&slug=${slug || ''}${linkParam}`);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
     const json = await res.json();
-    if (!json.success || !json.data) throw new Error('Cannot load cinema details');
+    if (!json.success || !json.data) throw new Error(json.error || 'Cannot load cinema details');
 
     const movie = json.data;
     state.activeMovie = movie;

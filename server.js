@@ -472,8 +472,11 @@ async function fetchChapterImages(chapterUrl) {
 // ==========================================
 
 const CINEMA_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'application/json, text/html, */*'
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'th,en-US;q=0.9,en;q=0.8',
+  'Referer': 'https://www.google.com/',
+  'Cache-Control': 'no-cache'
 };
 
 function cleanHtmlEntities(str) {
@@ -586,12 +589,88 @@ async function fetchCinemaDetails({ id, slug, link }) {
     throw new Error('Link, slug, or id required to fetch cinema details');
   }
 
-  const response = await fetch(targetUrl, { headers: CINEMA_HEADERS });
-  if (!response.ok) {
-    throw new Error(`Cinema movie page returned HTTP ${response.status}`);
+  let html = '';
+  try {
+    const response = await fetch(targetUrl, {
+      headers: CINEMA_HEADERS,
+      redirect: 'follow'
+    });
+    if (response.ok) {
+      html = await response.text();
+    } else {
+      console.warn(`Cinema targetUrl returned HTTP ${response.status}, trying fallback`);
+    }
+  } catch (err) {
+    console.warn('Cinema fetch HTML error:', err.message);
   }
 
-  const html = await response.text();
+  // Fallback 1: Try with or without trailing slash
+  if (!html) {
+    try {
+      const altUrl = targetUrl.endsWith('/') ? targetUrl.slice(0, -1) : targetUrl + '/';
+      const altRes = await fetch(altUrl, {
+        headers: {
+          ...CINEMA_HEADERS,
+          Referer: 'https://www.24hd.today/'
+        },
+        redirect: 'follow'
+      });
+      if (altRes.ok) {
+        html = await altRes.text();
+      }
+    } catch (e) {
+      console.warn('Cinema altUrl error:', e.message);
+    }
+  }
+
+  // Fallback 2: Check WP REST post API directly for metadata if HTML scraping fails
+  if (!html && id) {
+    try {
+      const pRes = await fetch(`${CINEMA_ORIGIN}/wp-json/wp/v2/posts/${id}?_embed=1`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        }
+      });
+      if (pRes.ok) {
+        const p = await pRes.json();
+        const pTitle = cleanHtmlEntities(p.title?.rendered || '').replace(/^ดูหนัง\s*/i, '');
+        const pPoster = p._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
+        const pDesc = cleanHtmlEntities(p.excerpt?.rendered || '');
+        const yMatch = pTitle.match(/\b(202\d|199\d|200\d|201\d)\b/);
+
+        const cMatch = (p.content?.rendered || '').match(/<iframe[^>]+src=["']([^"']*(?:player77hdfree|embed|vdohls)[^"']*)["']/i);
+        const resolvedIframe = cMatch ? cMatch[1] : null;
+        let resolvedVdoId = null;
+        if (resolvedIframe) {
+          const parts = resolvedIframe.split('/').filter(Boolean);
+          resolvedVdoId = parts[parts.length - 1];
+        }
+
+        return {
+          id: p.id,
+          slug: p.slug,
+          title: pTitle,
+          poster: pPoster || '/assets/placeholder.jpg',
+          synopsis: pDesc,
+          year: yMatch ? yMatch[1] : '2026',
+          rating: '8.8',
+          vdoId: resolvedVdoId,
+          iframeSrc: resolvedIframe,
+          streamUrl: resolvedVdoId ? `/api/proxy/hls/vdohls.com/${resolvedVdoId}/playlist.m3u8` : null,
+          tracks: [],
+          link: p.link,
+          isCinema: true
+        };
+      }
+    } catch (wpErr) {
+      console.warn('Cinema WP REST fallback error:', wpErr.message);
+    }
+  }
+
+  if (!html) {
+    throw new Error('Could not retrieve cinema movie page content');
+  }
 
   // Extract iframe src
   const iframeMatch = html.match(/<iframe[^>]+src=["']([^"']*(?:player77hdfree|embed|vdohls)[^"']*)["']/i) ||
